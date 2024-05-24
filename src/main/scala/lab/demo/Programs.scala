@@ -88,6 +88,11 @@ object Demo8 extends Simulation[Main8]
 class Main9 extends AggregateProgramSkeleton:
   override def main() = rep(0){_+1}
 
+object Task1 extends Simulation[MainTask1]
+class MainTask1 extends AggregateProgramSkeleton:
+  override def main() = branch(sense1)(rep(0){e => branch(e < 1000)(e + 1)(e)})(0)
+//con mux quando attivi un nodo non roncomincia da 0 ma continua a contare
+//con branch quando attivi un nodo rincomincia a contare da 0
 object Demo9 extends Simulation[Main9]
 
 class Main10 extends AggregateProgramSkeleton:
@@ -97,15 +102,29 @@ object Demo10 extends Simulation[Main10]
 
 class Main11 extends AggregateProgramSkeleton:
   override def main() = rep[Double](0.0){x => x + rep(Math.random()){y=>y}}
-
+//FORSE: alla prima iterazione viene genereato un numero random per ogni nodo.
+//alle successive iterazioni venegono sommate ad ogni nodo il numero random generato in partenza
+// non ne viene sommato un nuovo random
 object Demo11 extends Simulation[Main11]
 
 class Main12 extends AggregateProgramSkeleton:
   import Builtins.Bounded.of_i
 
   override def main() = maxHoodPlus(boolToInt(nbr{sense1}))
-
+  
 object Demo12 extends Simulation[Main12]
+  
+  
+object MainTask2 extends Simulation[MainTask2]
+
+class MainTask2 extends AggregateProgramSkeleton:
+
+  import Builtins.Bounded.of_i
+
+  override def main() = foldhood(Set[ID]())((s, id) => s.+(id.max))(nbr{sense1})
+
+object Task2 extends Simulation[Main12]
+
 
 class Main13 extends AggregateProgramSkeleton:
   override def main() = foldhoodPlus(0)(_+_){nbr{1}}
@@ -128,7 +147,8 @@ object Demo15 extends Simulation[Main15]
 class Main16 extends AggregateProgramSkeleton:
   override def main() = rep(Double.MaxValue):
     d => mux[Double](sense1){0.0}{minHoodPlus(nbr{d}+nbrRange)}
-
+//sommano due mappe: 1) chiave = nodo | valore = valore valore sull'arco.
+//                   2) chiave = nodo | valore = valore del nodo.
 object Demo16 extends Simulation[Main16]
 
 class Main17 extends AggregateProgramSkeleton with BlockG:
