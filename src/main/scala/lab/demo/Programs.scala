@@ -191,6 +191,17 @@ class MainTask6Partition extends AggregateProgramSkeleton:
 
 object Task6Partition extends Simulation[MainTask6Partition]
 
+
+class MainTask7Channel extends AggregateProgramSkeleton:
+
+  import Builtins.Bounded.*
+
+
+  override def main() = ???
+
+object Task7Channel extends Simulation[MainTask7Channel]
+
+
 class Main17 extends AggregateProgramSkeleton with BlockG:
   override def main() = gradientCast(source = sense1)(center = false)(accumulation = sense2 | _)
 
