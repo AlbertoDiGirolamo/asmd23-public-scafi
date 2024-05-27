@@ -8,8 +8,9 @@ import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.world.ScafiWorldI
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.ScafiWorldIncarnation.EXPORT
 import it.unibo.scafi.simulation.s2.frontend.view.{ViewSetting, WindowConfiguration}
 import it.unibo.scafi.space.graphics2D.BasicShape2D.Circle
+import jdk.internal.net.http.common.Pair.pair
 
-import scala.reflect._
+import scala.reflect.*
 
 object Incarnation extends BasicAbstractIncarnation with BuildingBlocks
 import lab.demo.Incarnation._ //import all stuff from an incarnation
@@ -85,15 +86,23 @@ class Main8 extends AggregateProgramSkeleton:
 
 object Demo8 extends Simulation[Main8]
 
+
+class MainTask4 extends AggregateProgramSkeleton:
+  override def main() = minHoodPlus(nbrRange, nbr{mid})._2
+
+object Task4 extends Simulation[MainTask4]
+
 class Main9 extends AggregateProgramSkeleton:
   override def main() = rep(0){_+1}
 
-object Task1 extends Simulation[MainTask1]
+object Demo9 extends Simulation[Main9]
+
+
 class MainTask1 extends AggregateProgramSkeleton:
   override def main() = branch(sense1)(rep(0){e => branch(e < 1000)(e + 1)(e)})(0)
 //con mux quando attivi un nodo non roncomincia da 0 ma continua a contare
 //con branch quando attivi un nodo rincomincia a contare da 0
-object Demo9 extends Simulation[Main9]
+object Task1 extends Simulation[MainTask1]
 
 class Main10 extends AggregateProgramSkeleton:
   override def main() = rep(Math.random()){x=>x}
@@ -102,7 +111,7 @@ object Demo10 extends Simulation[Main10]
 
 class Main11 extends AggregateProgramSkeleton:
   override def main() = rep[Double](0.0){x => x + rep(Math.random()){y=>y}}
-//FORSE: alla prima iterazione viene genereato un numero random per ogni nodo.
+//alla prima iterazione viene genereato un numero random per ogni nodo.
 //alle successive iterazioni venegono sommate ad ogni nodo il numero random generato in partenza
 // non ne viene sommato un nuovo random
 object Demo11 extends Simulation[Main11]
@@ -113,21 +122,20 @@ class Main12 extends AggregateProgramSkeleton:
   override def main() = maxHoodPlus(boolToInt(nbr{sense1}))
   
 object Demo12 extends Simulation[Main12]
-  
-  
-object MainTask2 extends Simulation[MainTask2]
+
 
 class MainTask2 extends AggregateProgramSkeleton:
 
   import Builtins.Bounded.of_i
 
-  override def main() = foldhood(Set[ID]())((s, id) => s.+(id.max))(nbr{sense1})
+  override def main() = foldhood(Set[ID]())((s, id) => s++id)(nbr{branch(sense1)(Set(mid()))(Set())})
 
-object Task2 extends Simulation[Main12]
+object Task2 extends Simulation[MainTask2]
 
 
 class Main13 extends AggregateProgramSkeleton:
   override def main() = foldhoodPlus(0)(_+_){nbr{1}}
+  //ogni nodo ha il numero dei suoi vicini. inserisce un uno in tutti i vicini un nodo, li accumula (_+_) sommandolo e li inserisce nel nodo
 
 object Demo13 extends Simulation[Main13]
 
@@ -135,12 +143,30 @@ class Main14 extends AggregateProgramSkeleton:
   import Builtins.Bounded.of_i
 
   override def main() = rep(0){ x => boolToInt(sense1) max maxHoodPlus( nbr{x}) }
+  //alla prima iterazione tutti i nodi sono a 0.
+  // se un nodo ha il sensore attivo allora il valore del nodo diventa 1 e lo propaga a tutti i nodi della rete interconnessi
 
 object Demo14 extends Simulation[Main14]
+
+
+
+class MainTask3 extends AggregateProgramSkeleton:
+
+  import Builtins.Bounded.of_i
+
+  override def main() = rep(0) { x => mid() max maxHoodPlus(x max mid())}
+//maxHoodPlus(x max mid()) prende il massimo tra l'id del noto e tutti suoi vicini
+//Propaga il massimo in tutta la rete
+object Task3 extends Simulation[MainTask3]
+
+
 
 class Main15 extends AggregateProgramSkeleton:
   override def main() = rep(Double.MaxValue):
     d => mux[Double](sense1){0.0}{minHoodPlus(nbr{d}+1.0)}
+    //partendo da un nodo (viene attivato) viene messo 0.
+    //successivamente prende il minimo tra il valore dei suoi vicini (cosi in modo da escludere gli inf) sommando uno.
+
 
 object Demo15 extends Simulation[Main15]
 
@@ -150,6 +176,20 @@ class Main16 extends AggregateProgramSkeleton:
 //sommano due mappe: 1) chiave = nodo | valore = valore valore sull'arco.
 //                   2) chiave = nodo | valore = valore del nodo.
 object Demo16 extends Simulation[Main16]
+
+
+class MainTask5 extends AggregateProgramSkeleton:
+  override def main() = rep(Double.MaxValue):
+    d => mux[Double](sense1) {0.0} {mux(sense2)(minHoodPlus((nbr{d} + nbrRange*5)))(minHoodPlus(nbr {d} + nbrRange)) }
+
+object Task5 extends Simulation[MainTask5]
+
+class MainTask6Partition extends AggregateProgramSkeleton:
+  import Builtins.Bounded.*
+  override def main() = rep(Double.MaxValue, Int.MaxValue):
+    d => mux[(Double, Int)](sense1){(0.0, mid())}{minHoodPlus(nbr{d._1}+nbrRange, d._2 min nbr(d._2))}
+
+object Task6Partition extends Simulation[MainTask6Partition]
 
 class Main17 extends AggregateProgramSkeleton with BlockG:
   override def main() = gradientCast(source = sense1)(center = false)(accumulation = sense2 | _)
