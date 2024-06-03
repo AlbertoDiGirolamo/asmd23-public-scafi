@@ -186,8 +186,10 @@ object Task5 extends Simulation[MainTask5]
 
 class MainTask6Partition extends AggregateProgramSkeleton:
   import Builtins.Bounded.*
-  override def main() = rep(Double.MaxValue, Int.MaxValue):
-    d => mux[(Double, Int)](sense1){(0.0, mid())}{minHoodPlus(nbr{d._1}+nbrRange, d._2 min nbr(d._2))}
+  def partition(sourceId : Set[Int]) = rep(Double.MaxValue, Int.MaxValue):
+    d => mux[(Double, Int)](sourceId.contains(mid)){(0.0, mid())}{minHoodPlus(nbr{d._1}+nbrRange, d._2 min nbr(d._2))}
+
+  override def main() = partition(Set(1))
 
 object Task6Partition extends Simulation[MainTask6Partition]
 
@@ -196,8 +198,20 @@ class MainTask7Channel extends AggregateProgramSkeleton:
 
   import Builtins.Bounded.*
 
+  //def distance(source: Boolean, destination:Boolean): Double = broadcast(source, "c", "")
+  def gradient(source: Boolean)= rep(Double.MaxValue):
+    d => mux[Double](source){0.0}{minHoodPlus(nbr{d}+nbrRange())}
 
-  override def main() = ???
+  def broadcast(source: Boolean, value: Double) = rep(Double.MaxValue):
+    d => mux(source){value}{minHoodPlus(nbr{d}+nbrRange)}
+
+
+  override def main() =
+    val sourceNode = sense1
+    val targetNode = sense2
+    val distanceToSource = gradient(sourceNode)
+    val distanceToTarget = broadcast(targetNode, distanceToSource)
+    println(distanceToTarget)
 
 object Task7Channel extends Simulation[MainTask7Channel]
 
