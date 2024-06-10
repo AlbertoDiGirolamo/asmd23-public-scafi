@@ -198,20 +198,23 @@ class MainTask7Channel extends AggregateProgramSkeleton:
 
   import Builtins.Bounded.*
 
-  //def distance(source: Boolean, destination:Boolean): Double = broadcast(source, "c", "")
-  def gradient(source: Boolean)= rep(Double.MaxValue):
-    d => mux[Double](source){0.0}{minHoodPlus(nbr{d}+nbrRange())}
+  var blockDistance: Double = 0.0
+  def gradient(source: Boolean) = rep(Double.MaxValue):
+    d => mux(source){0.0}{minHoodPlus(nbr{d} + nbrRange)}
 
-  def broadcast(source: Boolean, value: Double) = rep(Double.MaxValue):
-    d => mux(source){value}{minHoodPlus(nbr{d}+nbrRange)}
+  def broadcast(source: Boolean, input: Double) = rep((Double.MaxValue, Double.MaxValue)):
+    d => mux(source){(0.0, input)}{minHoodPlus(nbr{d._1}+nbrRange(), nbr{d._2})}
 
+  def distance(source: Boolean, destination: Boolean) =
+    broadcast(source, gradient(destination))
 
-  override def main() =
-    val sourceNode = sense1
-    val targetNode = sense2
-    val distanceToSource = gradient(sourceNode)
-    val distanceToTarget = broadcast(targetNode, distanceToSource)
-    println(distanceToTarget)
+  def dilate(region: Boolean, width: Double)=
+    gradient(region) < width
+
+  def channel(source: Boolean, destination: Boolean, width: Double) =
+    dilate((gradient(source) + gradient(destination)) <= distance(source, destination)._2, width)
+  override def main() = channel(sense1, sense2, 100.0)
+
 
 object Task7Channel extends Simulation[MainTask7Channel]
 
