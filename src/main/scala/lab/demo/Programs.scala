@@ -87,10 +87,10 @@ class Main8 extends AggregateProgramSkeleton:
 object Demo8 extends Simulation[Main8]
 
 
-class MainTask4 extends AggregateProgramSkeleton:
+class MainTask3 extends AggregateProgramSkeleton:
   override def main() = minHoodPlus(nbrRange, nbr{mid})._2
 
-object Task4 extends Simulation[MainTask4]
+object Task3 extends Simulation[MainTask4]
 
 class Main9 extends AggregateProgramSkeleton:
   override def main() = rep(0){_+1}
@@ -150,14 +150,13 @@ object Demo14 extends Simulation[Main14]
 
 
 
-class MainTask3 extends AggregateProgramSkeleton:
+class MainTask4 extends AggregateProgramSkeleton:
 
   import Builtins.Bounded.of_i
 
-  override def main() = rep(0) { x => mid() max maxHoodPlus(x max mid())}
-//maxHoodPlus(x max mid()) prende il massimo tra l'id del noto e tutti suoi vicini
-//Propaga il massimo in tutta la rete
-object Task3 extends Simulation[MainTask3]
+  override def main() = rep(0){ x => maxHoodPlus(nbr{x max mid()}) }
+
+object Task4 extends Simulation[MainTask4]
 
 
 
@@ -180,7 +179,7 @@ object Demo16 extends Simulation[Main16]
 
 class MainTask5 extends AggregateProgramSkeleton:
   override def main() = rep(Double.MaxValue):
-    d => mux[Double](sense1) {0.0} {mux(sense2)(minHoodPlus((nbr{d} + nbrRange*5)))(minHoodPlus(nbr {d} + nbrRange)) }
+    d => mux[Double](sense1) {0.0} {mux(sense2)(minHoodPlus(nbr{d} + nbrRange*5))(minHoodPlus(nbr{d} + nbrRange)) }
 
 object Task5 extends Simulation[MainTask5]
 
@@ -189,7 +188,7 @@ class MainTask6Partition extends AggregateProgramSkeleton:
   def partition(sourceId : Set[Int]) = rep(Double.MaxValue, Int.MaxValue):
     d => mux[(Double, Int)](sourceId.contains(mid)){(0.0, mid())}{minHoodPlus(nbr{d._1}+nbrRange, d._2 min nbr(d._2))}
 
-  override def main() = partition(Set(1))
+  override def main() = partition(Set(1,2))
 
 object Task6Partition extends Simulation[MainTask6Partition]
 
